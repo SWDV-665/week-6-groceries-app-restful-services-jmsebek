@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 import { AlertController } from '@ionic/angular';
+import { GroceriesServiceService } from '../groceries-service.service';
+import { InputDialogServiceService } from '../input-dialog-service.service';
+
 
 @Component({
   selector: 'app-tab1',
@@ -11,27 +14,11 @@ export class Tab1Page {
   
   title = "Grocery";
 
-  items = [
-    {
-      name:"Milk",
-      quantity: 2
-    },
-    {
-      name:"Bread",
-      quantity: 1
-    },
-    {
-      name:"Banana",
-      quantity: 3
-    },
-    {
-      name:"Sugar",
-      quantity: 1
-      }
-  
-  ];
+  constructor(private toastController: ToastController, private alertCtrl: AlertController, public dataService: GroceriesServiceService, public inputDialogService: InputDialogServiceService) {}
 
-  constructor(private toastController: ToastController, private alertCtrl: AlertController) {}
+  loadItems(){
+    return this.dataService.getItems();
+  }
 
   async removeItem(item, index){
     console.log("Removing Item -", item.name, index);
@@ -41,44 +28,27 @@ export class Tab1Page {
       position: 'bottom'
     });
     await toast.present();
-    this.items.splice(index, 1);
+    this.dataService.removeItem(index);
+  }
+
+  async editItem(item, index){
+    console.log("Editing Item -", item.name, index);
+    const toast = await this.toastController.create({
+      message: "Editing Item - " + index,
+      duration: 3000,
+      position: 'bottom'
+    });
+    await toast.present();
+    this.inputDialogService.showPrompt(item, index);
+    
   }
 
   addItem(){
     console.log("Adding item");
-    this.showAddItemPrompt();
+    this.inputDialogService.showPrompt();
   }
 
-  async showAddItemPrompt() {
-    const prompt = await this.alertCtrl.create({
-      header:'Add Item',
-      buttons: [{
-        text: 'Save',
-        handler: data =>{
-          console.log("Saved Clicked");
-          this.items.push(data);
-        }
-        },
-        {
-        text: 'Cancel',
-        handler: data => {
-          console.log('Cancel clicked');
-        }
-      }],
-      message: 'Please enter item...',
-      inputs: [
-        {
-          name: 'name',
-          placeholder: 'Name'
-        },
-        {
-          name: 'quantity',
-          placeholder: 'Quantity'
-        }
-      ]
-    });
-    await prompt.present()
+  
 
-  }
 
 }
