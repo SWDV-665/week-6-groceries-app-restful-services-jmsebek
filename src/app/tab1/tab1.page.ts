@@ -3,6 +3,7 @@ import { ToastController } from '@ionic/angular';
 import { AlertController } from '@ionic/angular';
 import { GroceriesServiceService } from '../groceries-service.service';
 import { InputDialogServiceService } from '../input-dialog-service.service';
+import { SocialSharing } from '@awesome-cordova-plugins/social-sharing/ngx';
 
 
 @Component({
@@ -14,7 +15,7 @@ export class Tab1Page {
   
   title = "Grocery";
 
-  constructor(private toastController: ToastController, private alertCtrl: AlertController, public dataService: GroceriesServiceService, public inputDialogService: InputDialogServiceService) {}
+  constructor(private toastController: ToastController, private alertCtrl: AlertController, public dataService: GroceriesServiceService, public inputDialogService: InputDialogServiceService, private socialSharing: SocialSharing) {}
 
   loadItems(){
     return this.dataService.getItems();
@@ -29,6 +30,27 @@ export class Tab1Page {
     });
     await toast.present();
     this.dataService.removeItem(index);
+  }
+
+  async shareItem(item, index){
+    console.log("Sharing Item -", item.name, index);
+    const toast = await this.toastController.create({
+      message: "Sharing Item - " + index,
+      duration: 3000,
+      position: 'bottom'
+    });
+    await toast.present();
+    let message = "Grocery Item - Name: " + item.name + " - Quantity: " + item.quantity;
+    let subject = "Shared via Groceries app";
+    // Check if sharing via email is supported
+    this.socialSharing.share(message, subject).then(() => {
+    // Sharing via email is possible
+    console.log("Shared Successfully!");
+    }).catch((error) => {
+    // Sharing via email is not possible
+    console.error("Error while sharing", error);
+});
+    
   }
 
   async editItem(item, index){
