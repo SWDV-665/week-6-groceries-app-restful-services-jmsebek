@@ -15,21 +15,29 @@ export class Tab1Page {
   
   title = "Grocery";
 
-  constructor(private toastController: ToastController, private alertCtrl: AlertController, public dataService: GroceriesServiceService, public inputDialogService: InputDialogServiceService, private socialSharing: SocialSharing) {}
+  items = [];
+  errorMessage: string;
 
-  loadItems(){
-    return this.dataService.getItems();
+  constructor(private toastController: ToastController, private alertCtrl: AlertController, public dataService: GroceriesServiceService, public inputDialogService: InputDialogServiceService, private socialSharing: SocialSharing) {
+    dataService.dataChanged$.subscribe((dataChanged:boolean) => {
+      this.loadItems();
+    });
   }
 
-  async removeItem(item, index){
-    console.log("Removing Item -", item.name, index);
-    const toast = await this.toastController.create({
-      message: "Removing Item - " + index,
-      duration: 3000,
-      position: 'bottom'
-    });
-    await toast.present();
-    this.dataService.removeItem(index);
+  ionViewDidLoad() {
+    this.loadItems();
+  }
+
+  loadItems(){
+    this.dataService.getItems()
+    .subscribe(
+      items => this.items = items,
+      error => this.errorMessage = <any>error);
+  }
+
+  async removeItem(id){
+    
+    this.dataService.removeItem(id);
   }
 
   async shareItem(item, index){
